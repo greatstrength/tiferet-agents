@@ -118,6 +118,12 @@ class AgentConfiguration(DomainObject):
         description='Maximum tokens in the LLM response.',
     )
 
+    # * attribute: graph_type
+    graph_type: str = Field(
+        default='react',
+        description='Graph topology type (react, custom).',
+    )
+
     # * attribute: tools
     tools: List[AgentTool] = Field(
         default_factory=list,

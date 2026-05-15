@@ -3,6 +3,7 @@
 # *** imports
 
 # ** core
+import importlib
 from typing import Any, List, Optional, Sequence
 
 # ** infra
@@ -38,6 +39,8 @@ class GraphBuilder:
         '''
         Build a compiled LangGraph agent from configuration.
 
+        Dispatches to the appropriate builder based on agent_config.graph_type.
+
         :param agent_config: The agent configuration.
         :type agent_config: AgentConfigurationAggregate
         :param chat_model: A LangChain-compatible chat model.
@@ -47,6 +50,52 @@ class GraphBuilder:
         :param checkpointer: Optional LangGraph checkpointer for state persistence.
         :type checkpointer: Any
         :param store: Optional LangGraph store for cross-thread memory.
+        :type store: Any
+        :return: A compiled LangGraph graph.
+        :rtype: Any
+        '''
+
+        # Resolve graph type from agent configuration.
+        graph_type = getattr(agent_config, 'graph_type', 'react')
+
+        # Dispatch to the appropriate builder.
+        if graph_type == 'react':
+            return GraphBuilder._build_react(
+                agent_config=agent_config,
+                chat_model=chat_model,
+                tools=tools,
+                checkpointer=checkpointer,
+                store=store,
+            )
+
+        # Unsupported graph type.
+        RaiseError.execute(
+            error_code=const.INVALID_GRAPH_TYPE_ID,
+            graph_type=graph_type,
+            agent_id=agent_config.id,
+        )
+
+    # * method: _build_react (static)
+    @staticmethod
+    def _build_react(
+            agent_config: AgentConfigurationAggregate,
+            chat_model: Any,
+            tools: Sequence = (),
+            checkpointer: Any = None,
+            store: Any = None,
+        ) -> Any:
+        '''
+        Build a ReAct agent graph using LangGraph's prebuilt create_react_agent.
+
+        :param agent_config: The agent configuration.
+        :type agent_config: AgentConfigurationAggregate
+        :param chat_model: A LangChain-compatible chat model.
+        :type chat_model: Any
+        :param tools: Sequence of LangChain tools.
+        :type tools: Sequence
+        :param checkpointer: Optional LangGraph checkpointer.
+        :type checkpointer: Any
+        :param store: Optional LangGraph store.
         :type store: Any
         :return: A compiled LangGraph graph.
         :rtype: Any
@@ -74,6 +123,54 @@ class GraphBuilder:
                 agent_id=agent_config.id,
                 error=str(e),
             )
+
+    # * method: load_tools (static)
+    @staticmethod
+    def load_tools(agent_config: AgentConfigurationAggregate) -> List:
+        '''
+        Load and instantiate tools from an agent configuration.
+
+        Iterates over agent_config.tools, imports each module_path.class_name,
+        and instantiates with any static parameters.
+
+        :param agent_config: The agent configuration with tool definitions.
+        :type agent_config: AgentConfigurationAggregate
+        :return: A list of instantiated tool callables.
+        :rtype: List
+        '''
+
+        # Return empty list if no tools configured.
+        if not agent_config.tools:
+            return []
+
+        loaded = []
+        for tool_def in agent_config.tools:
+
+            try:
+
+                # Import the module and resolve the class/function.
+                module = importlib.import_module(tool_def.module_path)
+                tool_cls = getattr(module, tool_def.class_name)
+
+                # Instantiate with static parameters if any.
+                if tool_def.parameters:
+                    tool_instance = tool_cls(**tool_def.parameters)
+                else:
+                    tool_instance = tool_cls()
+
+                loaded.append(tool_instance)
+
+            except Exception as e:
+
+                # Wrap tool loading errors.
+                RaiseError.execute(
+                    error_code=const.TOOL_LOAD_ERROR_ID,
+                    tool_id=tool_def.id,
+                    error=str(e),
+                )
+
+        # Return the list of loaded tools.
+        return loaded
 
     # * method: invoke (static)
     @staticmethod

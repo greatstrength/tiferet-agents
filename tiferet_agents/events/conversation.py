@@ -13,8 +13,10 @@ from ..domain.conversation import Conversation, Message
 from ..interfaces.agent import AgentService
 from ..interfaces.conversation import ConversationService
 from ..interfaces.llm import LLMProviderService
+from ..mappers.agent import AgentConfigurationAggregate
 from ..mappers.conversation import ConversationAggregate, MessageAggregate
 from ..utils.graph import GraphBuilder
+from ..utils.prompts import PromptRenderer
 
 # *** events
 
@@ -105,10 +107,27 @@ class SendMessage(DomainEvent):
         if conversation is None:
             conversation = ConversationAggregate(agent_id=agent_id)
 
-        # Build the graph (no tools for alpha — tool loading comes in a2).
+        # Render the system prompt with context variables.
+        prompt_context = dict(
+            agent_name=agent.name,
+            agent_id=agent.id,
+        )
+        prompt_context.update(kwargs.get('prompt_context', {}))
+        rendered_prompt = PromptRenderer.render(agent.system_prompt, prompt_context)
+
+        # Create a prompt-rendered copy for graph building.
+        agent_for_graph = AgentConfigurationAggregate(
+            **{**agent.model_dump(), 'system_prompt': rendered_prompt}
+        )
+
+        # Load tools from agent configuration.
+        tools = GraphBuilder.load_tools(agent)
+
+        # Build the graph with loaded tools.
         graph = GraphBuilder.build(
-            agent_config=agent,
+            agent_config=agent_for_graph,
             chat_model=chat_model,
+            tools=tools,
         )
 
         # Invoke the graph.

@@ -29,3 +29,18 @@ errors:
     message:
       - lang: en_US
         text: 'LLM invocation failed: {error}'
+  TOOL_NOT_FOUND:
+    name: Tool Not Found
+    message:
+      - lang: en_US
+        text: 'Tool {tool_id} not found on agent {agent_id}'
+  TOOL_LOAD_ERROR:
+    name: Tool Load Error
+    message:
+      - lang: en_US
+        text: 'Failed to load tool {tool_id}: {error}'
+  INVALID_GRAPH_TYPE:
+    name: Invalid Graph Type
+    message:
+      - lang: en_US
+        text: 'Unsupported graph type: {graph_type} for agent {agent_id}'
