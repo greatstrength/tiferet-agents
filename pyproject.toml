@@ -27,9 +27,13 @@ anthropic = [
 google = [
     "langchain-google-genai",
 ]
+memory = [
+    "tiferet-kb>=0.2.0a1",
+]
 all = [
     "langchain-anthropic",
     "langchain-google-genai",
+    "tiferet-kb>=0.2.0a1",
 ]
 
 [tool.setuptools.dynamic]

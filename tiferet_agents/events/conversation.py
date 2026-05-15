@@ -12,10 +12,13 @@ from ..assets import constants as const
 from ..domain.conversation import Conversation, Message
 from ..interfaces.agent import AgentService
 from ..interfaces.conversation import ConversationService
+from ..interfaces.embedding import EmbeddingService
 from ..interfaces.llm import LLMProviderService
+from ..interfaces.memory import MemoryService
 from ..mappers.agent import AgentConfigurationAggregate
 from ..mappers.conversation import ConversationAggregate, MessageAggregate
 from ..utils.graph import GraphBuilder
+from ..utils.memory_tools import create_memory_tools
 from ..utils.prompts import PromptRenderer
 
 # *** events
@@ -38,11 +41,19 @@ class SendMessage(DomainEvent):
     # * attribute: llm_provider_service
     llm_provider_service: LLMProviderService
 
+    # * attribute: memory_service
+    memory_service: MemoryService | None
+
+    # * attribute: embedding_service
+    embedding_service: EmbeddingService | None
+
     # * init
     def __init__(self,
             agent_service: AgentService,
             conversation_service: ConversationService,
             llm_provider_service: LLMProviderService,
+            memory_service: MemoryService | None = None,
+            embedding_service: EmbeddingService | None = None,
         ):
         '''
         Initialize the SendMessage event.
@@ -53,12 +64,18 @@ class SendMessage(DomainEvent):
         :type conversation_service: ConversationService
         :param llm_provider_service: Service for creating LLM instances.
         :type llm_provider_service: LLMProviderService
+        :param memory_service: Optional memory service for fact persistence.
+        :type memory_service: MemoryService | None
+        :param embedding_service: Optional embedding service for vector generation.
+        :type embedding_service: EmbeddingService | None
         '''
 
         # Set dependencies.
         self.agent_service = agent_service
         self.conversation_service = conversation_service
         self.llm_provider_service = llm_provider_service
+        self.memory_service = memory_service
+        self.embedding_service = embedding_service
 
     # * method: execute
     @DomainEvent.parameters_required(['agent_id', 'message'])
@@ -122,6 +139,22 @@ class SendMessage(DomainEvent):
 
         # Load tools from agent configuration.
         tools = GraphBuilder.load_tools(agent)
+
+        # Add memory tools if memory is enabled and services are available.
+        memory_config = getattr(agent, 'memory', None)
+        if (memory_config and memory_config.enabled
+                and self.memory_service and self.embedding_service):
+            namespace = self.memory_service.get_or_create_namespace(
+                agent_id=agent_id,
+                name=memory_config.namespace,
+            )
+            mem_tools = create_memory_tools(
+                memory_service=self.memory_service,
+                embedding_service=self.embedding_service,
+                namespace_id=namespace.id,
+                recall_limit=memory_config.recall_limit,
+            )
+            tools.extend(mem_tools)
 
         # Build the graph with loaded tools.
         graph = GraphBuilder.build(

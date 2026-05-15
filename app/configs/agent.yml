@@ -6,3 +6,18 @@ agents:
     model: gpt-4o-mini
     system_prompt: You are a helpful assistant. Be concise and accurate.
     temperature: 0.7
+  memory_assistant:
+    name: Memory Assistant
+    description: An assistant that remembers facts across conversations
+    provider: openai
+    model: gpt-4o-mini
+    system_prompt: >-
+      You are {agent_name}, a helpful assistant with memory capabilities.
+      Today is {current_date}. You can remember and recall facts about users.
+    temperature: 0.7
+    memory:
+      enabled: true
+      namespace: default
+      recall_limit: 5
+      embedding_provider: openai
+      embedding_model: text-embedding-3-small

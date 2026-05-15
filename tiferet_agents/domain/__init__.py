@@ -3,5 +3,6 @@
 # *** exports
 
 # ** app
-from .agent import AgentConfiguration, AgentTool
+from .agent import AgentConfiguration, AgentMemoryConfig, AgentTool
 from .conversation import Conversation, Message
+from .memory import MemoryFact, MemoryNamespace
