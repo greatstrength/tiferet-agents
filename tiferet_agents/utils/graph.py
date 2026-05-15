@@ -13,14 +13,14 @@ from langgraph.prebuilt import create_react_agent
 from tiferet.events import RaiseError
 
 from ..assets import constants as const
-from ..domain.agent import AgentConfiguration
+from ..mappers.agent import AgentConfigurationAggregate
 
 # *** utils
 
 # ** util: graph_builder
 class GraphBuilder:
     '''
-    Utility for building LangGraph agent graphs from AgentConfiguration objects.
+    Utility for building LangGraph agent graphs from AgentConfigurationAggregate objects.
 
     Wraps LangGraph's ``create_react_agent`` to produce a compiled graph
     ready for ``.invoke()`` or ``.stream()`` calls.
@@ -29,7 +29,7 @@ class GraphBuilder:
     # * method: build (static)
     @staticmethod
     def build(
-            agent_config: AgentConfiguration,
+            agent_config: AgentConfigurationAggregate,
             chat_model: Any,
             tools: Sequence = (),
             checkpointer: Any = None,
@@ -39,7 +39,7 @@ class GraphBuilder:
         Build a compiled LangGraph agent from configuration.
 
         :param agent_config: The agent configuration.
-        :type agent_config: AgentConfiguration
+        :type agent_config: AgentConfigurationAggregate
         :param chat_model: A LangChain-compatible chat model.
         :type chat_model: Any
         :param tools: Sequence of LangChain tools.
