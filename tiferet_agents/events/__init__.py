@@ -5,3 +5,4 @@
 # ** app
 from .agent import ConfigureAgent, GetAgent, ListAgents, RemoveAgent
 from .conversation import SendMessage, GetConversation, ListConversations
+from .tool import RegisterTool, ListTools, RemoveTool

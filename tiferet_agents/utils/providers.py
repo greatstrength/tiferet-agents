@@ -63,6 +63,9 @@ class LLMProviderFactory(LLMProviderService):
         if provider == 'anthropic':
             return self._create_anthropic(**model_kwargs)
 
+        if provider == 'google':
+            return self._create_google(**model_kwargs)
+
         # Raise an error for unsupported providers.
         RaiseError.execute(
             error_code=const.INVALID_PROVIDER_ID,
@@ -104,4 +107,26 @@ class LLMProviderFactory(LLMProviderService):
                 error_code=const.INVALID_PROVIDER_ID,
                 provider='anthropic',
                 message='langchain-anthropic is not installed. Install with: pip install tiferet-agents[anthropic]',
+            )
+
+    # * method: _create_google
+    def _create_google(self, **kwargs) -> Any:
+        '''
+        Create a Google Generative AI chat model.
+
+        :param kwargs: Model parameters.
+        :type kwargs: dict
+        :return: A ChatGoogleGenerativeAI instance.
+        :rtype: Any
+        '''
+
+        # Import and instantiate ChatGoogleGenerativeAI (optional dependency).
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            return ChatGoogleGenerativeAI(**kwargs)
+        except ImportError:
+            RaiseError.execute(
+                error_code=const.INVALID_PROVIDER_ID,
+                provider='google',
+                message='langchain-google-genai is not installed. Install with: pip install tiferet-agents[google]',
             )

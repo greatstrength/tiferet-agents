@@ -6,3 +6,4 @@
 from .agent import AgentService
 from .conversation import ConversationService
 from .llm import LLMProviderService
+from .tool import ToolService

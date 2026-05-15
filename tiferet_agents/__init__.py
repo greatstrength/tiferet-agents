@@ -7,7 +7,7 @@
 # __version__ without requiring the full dependency tree to be installed.
 try:
     from .domain import AgentConfiguration, AgentTool, Conversation, Message
-    from .interfaces import AgentService, ConversationService, LLMProviderService
+    from .interfaces import AgentService, ConversationService, LLMProviderService, ToolService
     from .mappers import (
         AgentConfigurationAggregate,
         AgentConfigurationYamlObject,
@@ -16,6 +16,7 @@ try:
         ConversationAggregate,
         MessageAggregate,
     )
+    from .utils import GraphBuilder, LLMProviderFactory, PromptRenderer
 except Exception as e:
     import os, sys
     if not os.getenv('TIFERET_AGENTS_SILENT_IMPORTS'):
@@ -23,4 +24,4 @@ except Exception as e:
 
 # *** version
 
-__version__ = '0.1.0a1'
+__version__ = '0.1.0a2'

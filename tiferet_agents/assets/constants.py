@@ -34,3 +34,9 @@ LLM_INVOCATION_ERROR_ID = 'LLM_INVOCATION_ERROR'
 
 # ** constant: tool_not_found_id
 TOOL_NOT_FOUND_ID = 'TOOL_NOT_FOUND'
+
+# ** constant: tool_load_error_id
+TOOL_LOAD_ERROR_ID = 'TOOL_LOAD_ERROR'
+
+# ** constant: invalid_graph_type_id
+INVALID_GRAPH_TYPE_ID = 'INVALID_GRAPH_TYPE'

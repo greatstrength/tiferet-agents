@@ -24,6 +24,13 @@ test = [
 anthropic = [
     "langchain-anthropic",
 ]
+google = [
+    "langchain-google-genai",
+]
+all = [
+    "langchain-anthropic",
+    "langchain-google-genai",
+]
 
 [tool.setuptools.dynamic]
 version = {attr = "tiferet_agents.__version__"}
