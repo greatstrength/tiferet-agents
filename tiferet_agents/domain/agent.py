@@ -61,6 +61,43 @@ class AgentTool(DomainObject):
     )
 
 
+# ** model: agent_memory_config
+class AgentMemoryConfig(DomainObject):
+    '''
+    Configuration for agent memory capabilities.
+    '''
+
+    # * attribute: enabled
+    enabled: bool = Field(
+        default=False,
+        description='Whether memory is enabled for this agent.',
+    )
+
+    # * attribute: namespace
+    namespace: str = Field(
+        default='default',
+        description='Memory namespace name for this agent.',
+    )
+
+    # * attribute: recall_limit
+    recall_limit: int = Field(
+        default=5,
+        description='Maximum number of facts to recall per query.',
+    )
+
+    # * attribute: embedding_provider
+    embedding_provider: str = Field(
+        default='openai',
+        description='Embedding model provider (e.g., openai).',
+    )
+
+    # * attribute: embedding_model
+    embedding_model: str = Field(
+        default='text-embedding-3-small',
+        description='Embedding model identifier.',
+    )
+
+
 # ** model: agent_configuration
 class AgentConfiguration(DomainObject):
     '''
@@ -122,6 +159,12 @@ class AgentConfiguration(DomainObject):
     graph_type: str = Field(
         default='react',
         description='Graph topology type (react, custom).',
+    )
+
+    # * attribute: memory
+    memory: Optional[AgentMemoryConfig] = Field(
+        default=None,
+        description='Optional memory configuration for this agent.',
     )
 
     # * attribute: tools

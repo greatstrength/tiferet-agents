@@ -44,3 +44,18 @@ errors:
     message:
       - lang: en_US
         text: 'Unsupported graph type: {graph_type} for agent {agent_id}'
+  EMBEDDING_ERROR:
+    name: Embedding Error
+    message:
+      - lang: en_US
+        text: 'Embedding generation failed: {error}'
+  MEMORY_NAMESPACE_NOT_FOUND:
+    name: Memory Namespace Not Found
+    message:
+      - lang: en_US
+        text: 'Memory namespace not found: {namespace_id}'
+  MEMORY_FACT_NOT_FOUND:
+    name: Memory Fact Not Found
+    message:
+      - lang: en_US
+        text: 'Memory fact not found: {fact_id}'

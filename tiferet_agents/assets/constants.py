@@ -40,3 +40,12 @@ TOOL_LOAD_ERROR_ID = 'TOOL_LOAD_ERROR'
 
 # ** constant: invalid_graph_type_id
 INVALID_GRAPH_TYPE_ID = 'INVALID_GRAPH_TYPE'
+
+# ** constant: embedding_error_id
+EMBEDDING_ERROR_ID = 'EMBEDDING_ERROR'
+
+# ** constant: memory_namespace_not_found_id
+MEMORY_NAMESPACE_NOT_FOUND_ID = 'MEMORY_NAMESPACE_NOT_FOUND'
+
+# ** constant: memory_fact_not_found_id
+MEMORY_FACT_NOT_FOUND_ID = 'MEMORY_FACT_NOT_FOUND'
