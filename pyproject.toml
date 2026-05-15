@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tiferet-agents"
+dynamic = ["version"]
+description = "Agentic extension for the Tiferet framework with LangGraph-based agent orchestration"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "BSD-3-Clause" }
+dependencies = [
+    "tiferet>=2.0.0b3",
+    "langgraph>=1.0",
+    "langchain-openai",
+    "langchain-core",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0",
+    "pytest-cov",
+]
+anthropic = [
+    "langchain-anthropic",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "tiferet_agents.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tiferet_agents*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tiferet_agents"]

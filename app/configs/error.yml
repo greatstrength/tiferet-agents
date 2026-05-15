@@ -1,0 +1,31 @@
+errors:
+  agent_not_found:
+    name: Agent Not Found
+    message:
+      - lang: en_US
+        text: 'Agent configuration not found: {agent_id}'
+  agent_already_exists:
+    name: Agent Already Exists
+    message:
+      - lang: en_US
+        text: 'Agent configuration already exists: {id}'
+  invalid_provider:
+    name: Invalid LLM Provider
+    message:
+      - lang: en_US
+        text: 'Unsupported LLM provider: {provider}'
+  conversation_not_found:
+    name: Conversation Not Found
+    message:
+      - lang: en_US
+        text: 'Conversation not found: {conversation_id}'
+  graph_build_error:
+    name: Graph Build Error
+    message:
+      - lang: en_US
+        text: 'Failed to build agent graph for agent {agent_id}: {error}'
+  llm_invocation_error:
+    name: LLM Invocation Error
+    message:
+      - lang: en_US
+        text: 'LLM invocation failed: {error}'

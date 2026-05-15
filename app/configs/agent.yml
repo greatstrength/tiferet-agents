@@ -1,0 +1,8 @@
+agents:
+  basic_assistant:
+    name: Basic Assistant
+    description: A simple conversational assistant
+    provider: openai
+    model: gpt-4o-mini
+    system_prompt: You are a helpful assistant. Be concise and accurate.
+    temperature: 0.7
