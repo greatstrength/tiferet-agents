@@ -49,3 +49,21 @@ MEMORY_NAMESPACE_NOT_FOUND_ID = 'MEMORY_NAMESPACE_NOT_FOUND'
 
 # ** constant: memory_fact_not_found_id
 MEMORY_FACT_NOT_FOUND_ID = 'MEMORY_FACT_NOT_FOUND'
+
+# ** constant: llm_rate_limit_error_id
+LLM_RATE_LIMIT_ERROR_ID = 'LLM_RATE_LIMIT_ERROR'
+
+# ** constant: llm_context_length_error_id
+LLM_CONTEXT_LENGTH_ERROR_ID = 'LLM_CONTEXT_LENGTH_ERROR'
+
+# ** constant: llm_auth_error_id
+LLM_AUTH_ERROR_ID = 'LLM_AUTH_ERROR'
+
+# ** constant: llm_timeout_error_id
+LLM_TIMEOUT_ERROR_ID = 'LLM_TIMEOUT_ERROR'
+
+# ** constant: tool_approval_required_id
+TOOL_APPROVAL_REQUIRED_ID = 'TOOL_APPROVAL_REQUIRED'
+
+# ** constant: tool_call_not_found_id
+TOOL_CALL_NOT_FOUND_ID = 'TOOL_CALL_NOT_FOUND'

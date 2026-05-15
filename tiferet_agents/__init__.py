@@ -23,7 +23,14 @@ try:
         ConversationAggregate,
         MessageAggregate,
     )
-    from .utils import EmbeddingProviderFactory, GraphBuilder, LLMProviderFactory, PromptRenderer
+    from .events import (
+        ApproveToolCall, DenyToolCall,
+        SendMessage, SendMessageStream,
+    )
+    from .utils import (
+        EmbeddingProviderFactory, GraphBuilder, LLMProviderFactory,
+        PromptRenderer, RetryHandler, create_feature_tool,
+    )
 except Exception as e:
     import os, sys
     if not os.getenv('TIFERET_AGENTS_SILENT_IMPORTS'):
@@ -31,4 +38,4 @@ except Exception as e:
 
 # *** version
 
-__version__ = '0.1.0a3'
+__version__ = '0.1.0a4'
