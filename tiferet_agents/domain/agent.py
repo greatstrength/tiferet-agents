@@ -60,6 +60,12 @@ class AgentTool(DomainObject):
         description='Static parameter overrides passed to the tool at init.',
     )
 
+    # * attribute: requires_approval
+    requires_approval: bool = Field(
+        default=False,
+        description='Whether this tool requires human approval before execution.',
+    )
+
 
 # ** model: agent_memory_config
 class AgentMemoryConfig(DomainObject):
@@ -159,6 +165,18 @@ class AgentConfiguration(DomainObject):
     graph_type: str = Field(
         default='react',
         description='Graph topology type (react, custom).',
+    )
+
+    # * attribute: max_retries
+    max_retries: int = Field(
+        default=3,
+        description='Maximum retries on transient LLM errors.',
+    )
+
+    # * attribute: token_budget
+    token_budget: Optional[int] = Field(
+        default=None,
+        description='Optional token budget for tracking usage.',
     )
 
     # * attribute: memory

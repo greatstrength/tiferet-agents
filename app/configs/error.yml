@@ -59,3 +59,33 @@ errors:
     message:
       - lang: en_US
         text: 'Memory fact not found: {fact_id}'
+  LLM_RATE_LIMIT_ERROR:
+    name: LLM Rate Limit Error
+    message:
+      - lang: en_US
+        text: 'LLM rate limit exceeded: {error}'
+  LLM_CONTEXT_LENGTH_ERROR:
+    name: LLM Context Length Error
+    message:
+      - lang: en_US
+        text: 'LLM context length exceeded: {error}'
+  LLM_AUTH_ERROR:
+    name: LLM Authentication Error
+    message:
+      - lang: en_US
+        text: 'LLM authentication failed: {error}'
+  LLM_TIMEOUT_ERROR:
+    name: LLM Timeout Error
+    message:
+      - lang: en_US
+        text: 'LLM request timed out: {error}'
+  TOOL_APPROVAL_REQUIRED:
+    name: Tool Approval Required
+    message:
+      - lang: en_US
+        text: 'Tool call requires human approval: {tool_name}'
+  TOOL_CALL_NOT_FOUND:
+    name: Tool Call Not Found
+    message:
+      - lang: en_US
+        text: 'Pending tool call not found: {thread_id}'

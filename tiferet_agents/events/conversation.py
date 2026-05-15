@@ -3,7 +3,7 @@
 # *** imports
 
 # ** core
-from typing import List
+from typing import Generator, List
 
 # ** app
 from tiferet.events import DomainEvent
@@ -200,6 +200,184 @@ class SendMessage(DomainEvent):
 
         # Return the AI response message.
         return ai_msg
+
+
+# ** event: send_message_stream
+class SendMessageStream(DomainEvent):
+    '''
+    Event to stream a message to an agent, yielding token chunks.
+
+    Same orchestration as SendMessage but uses graph.stream() for
+    token-by-token streaming output.
+    '''
+
+    # * attribute: agent_service
+    agent_service: AgentService
+
+    # * attribute: conversation_service
+    conversation_service: ConversationService
+
+    # * attribute: llm_provider_service
+    llm_provider_service: LLMProviderService
+
+    # * attribute: memory_service
+    memory_service: MemoryService | None
+
+    # * attribute: embedding_service
+    embedding_service: EmbeddingService | None
+
+    # * init
+    def __init__(self,
+            agent_service: AgentService,
+            conversation_service: ConversationService,
+            llm_provider_service: LLMProviderService,
+            memory_service: MemoryService | None = None,
+            embedding_service: EmbeddingService | None = None,
+        ):
+        '''
+        Initialize the SendMessageStream event.
+
+        :param agent_service: Service for loading agent configurations.
+        :type agent_service: AgentService
+        :param conversation_service: Service for conversation persistence.
+        :type conversation_service: ConversationService
+        :param llm_provider_service: Service for creating LLM instances.
+        :type llm_provider_service: LLMProviderService
+        :param memory_service: Optional memory service.
+        :type memory_service: MemoryService | None
+        :param embedding_service: Optional embedding service.
+        :type embedding_service: EmbeddingService | None
+        '''
+
+        # Set dependencies.
+        self.agent_service = agent_service
+        self.conversation_service = conversation_service
+        self.llm_provider_service = llm_provider_service
+        self.memory_service = memory_service
+        self.embedding_service = embedding_service
+
+    # * method: execute
+    @DomainEvent.parameters_required(['agent_id', 'message'])
+    def execute(self,
+            agent_id: str,
+            message: str,
+            conversation_id: str | None = None,
+            **kwargs,
+        ) -> Generator:
+        '''
+        Stream a message to an agent, yielding token chunks.
+
+        :param agent_id: The agent configuration identifier.
+        :type agent_id: str
+        :param message: The user message content.
+        :type message: str
+        :param conversation_id: Optional existing conversation ID.
+        :type conversation_id: str | None
+        :param kwargs: Additional keyword arguments.
+        :type kwargs: dict
+        :return: A generator yielding token chunk strings.
+        :rtype: Generator
+        '''
+
+        # Load the agent configuration.
+        agent = self.agent_service.get(agent_id)
+        self.verify(
+            expression=agent is not None,
+            error_code=const.AGENT_NOT_FOUND_ID,
+            agent_id=agent_id,
+        )
+
+        # Create the LLM model from agent config.
+        chat_model = self.llm_provider_service.create_model(
+            provider=agent.provider,
+            model=agent.model,
+            temperature=agent.temperature,
+            max_tokens=agent.max_tokens,
+        )
+
+        # Get or create the conversation.
+        conversation = None
+        if conversation_id:
+            conversation = self.conversation_service.get(conversation_id)
+
+        if conversation is None:
+            conversation = ConversationAggregate(agent_id=agent_id)
+
+        # Render the system prompt with context variables.
+        prompt_context = dict(
+            agent_name=agent.name,
+            agent_id=agent.id,
+        )
+        prompt_context.update(kwargs.get('prompt_context', {}))
+        rendered_prompt = PromptRenderer.render(agent.system_prompt, prompt_context)
+
+        # Create a prompt-rendered copy for graph building.
+        agent_for_graph = AgentConfigurationAggregate(
+            **{**agent.model_dump(), 'system_prompt': rendered_prompt}
+        )
+
+        # Load tools from agent configuration.
+        tools = GraphBuilder.load_tools(agent)
+
+        # Add memory tools if memory is enabled.
+        memory_config = getattr(agent, 'memory', None)
+        if (memory_config and memory_config.enabled
+                and self.memory_service and self.embedding_service):
+            namespace = self.memory_service.get_or_create_namespace(
+                agent_id=agent_id,
+                name=memory_config.namespace,
+            )
+            mem_tools = create_memory_tools(
+                memory_service=self.memory_service,
+                embedding_service=self.embedding_service,
+                namespace_id=namespace.id,
+                recall_limit=memory_config.recall_limit,
+            )
+            tools.extend(mem_tools)
+
+        # Build the graph with loaded tools.
+        graph = GraphBuilder.build(
+            agent_config=agent_for_graph,
+            chat_model=chat_model,
+            tools=tools,
+        )
+
+        # Stream the graph and yield chunks.
+        full_content = []
+        for chunk in GraphBuilder.stream(graph=graph, message=message):
+
+            # Extract text content from the chunk.
+            if hasattr(chunk, 'content') and chunk.content:
+                content = chunk.content
+                full_content.append(content)
+                yield content
+
+            elif isinstance(chunk, tuple) and len(chunk) >= 1:
+                msg = chunk[0]
+                if hasattr(msg, 'content') and msg.content:
+                    content = msg.content
+                    full_content.append(content)
+                    yield content
+
+        # After streaming, persist the conversation.
+        ai_content = ''.join(full_content)
+
+        # Create message aggregates.
+        user_msg = MessageAggregate(
+            conversation_id=conversation.id,
+            role='human',
+            content=message,
+        )
+        ai_msg = MessageAggregate(
+            conversation_id=conversation.id,
+            role='ai',
+            content=ai_content,
+        )
+
+        # Add messages and persist.
+        conversation.add_message(user_msg)
+        conversation.add_message(ai_msg)
+        self.conversation_service.save(conversation)
 
 
 # ** event: get_conversation
