@@ -3,9 +3,7 @@
 # *** imports
 
 # ** infra
-import pytest
 from datetime import datetime, timezone
-from unittest import mock
 
 # ** app
 from ..prompts import PromptRenderer, SafeDict

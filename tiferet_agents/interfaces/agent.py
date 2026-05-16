@@ -4,7 +4,7 @@
 
 # ** core
 from abc import abstractmethod
-from typing import List, Optional
+from typing import List
 
 # ** app
 from tiferet.interfaces import Service

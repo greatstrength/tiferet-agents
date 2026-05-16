@@ -3,18 +3,19 @@
 # *** imports
 
 # ** infra
-import pytest
 from unittest import mock
+
+import pytest
+from tiferet.assets.exceptions import TiferetError
 
 # ** app
 from tiferet.events import DomainEvent
-from tiferet.assets.exceptions import TiferetError
 
-from ..approval import ApproveToolCall, DenyToolCall
 from ...interfaces.agent import AgentService
 from ...interfaces.llm import LLMProviderService
 from ...mappers.agent import AgentConfigurationAggregate
 from ...utils.graph import GraphBuilder
+from ..approval import ApproveToolCall, DenyToolCall
 
 # *** fixtures
 

@@ -3,7 +3,6 @@
 # *** imports
 
 # ** infra
-import pytest
 from unittest import mock
 
 # ** app

@@ -1,5 +1,10 @@
 """tiferet_agents Interfaces Exports"""
 
+__all__ = [
+    'AgentService', 'ConversationService', 'EmbeddingService',
+    'LLMProviderService', 'MemoryService', 'ToolService',
+]
+
 # *** exports
 
 # ** app

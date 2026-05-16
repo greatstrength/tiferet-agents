@@ -16,10 +16,16 @@ dependencies = [
     "langchain-core",
 ]
 
+[project.urls]
+Homepage = "https://github.com/greatstrength/tiferet-agents"
+Repository = "https://github.com/greatstrength/tiferet-agents"
+Issues = "https://github.com/greatstrength/tiferet-agents/issues"
+
 [project.optional-dependencies]
 test = [
     "pytest>=7.0",
     "pytest-cov",
+    "ruff",
 ]
 anthropic = [
     "langchain-anthropic",
@@ -30,10 +36,17 @@ google = [
 memory = [
     "tiferet-kb>=0.2.0a1",
 ]
+sqlite = [
+    "langgraph-checkpoint-sqlite",
+]
+postgres = [
+    "langgraph-checkpoint-postgres",
+]
 all = [
     "langchain-anthropic",
     "langchain-google-genai",
     "tiferet-kb>=0.2.0a1",
+    "langgraph-checkpoint-sqlite",
 ]
 
 [tool.setuptools.dynamic]
@@ -45,3 +58,11 @@ include = ["tiferet_agents*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tiferet_agents"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]

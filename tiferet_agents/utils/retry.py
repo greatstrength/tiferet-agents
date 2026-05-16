@@ -46,8 +46,6 @@ class RetryHandler:
         :rtype: Any
         '''
 
-        last_error = None
-
         for attempt in range(max_retries + 1):
 
             try:
@@ -56,8 +54,6 @@ class RetryHandler:
                 return fn()
 
             except Exception as e:
-
-                last_error = e
 
                 # Classify the error.
                 error_code = RetryHandler._classify_error(e)

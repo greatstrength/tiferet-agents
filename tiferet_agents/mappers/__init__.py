@@ -1,5 +1,11 @@
 """tiferet_agents Mappers Exports"""
 
+__all__ = [
+    'AgentConfigurationAggregate', 'AgentConfigurationYamlObject',
+    'AgentToolAggregate', 'AgentToolYamlObject',
+    'ConversationAggregate', 'MessageAggregate',
+]
+
 # *** exports
 
 # ** app

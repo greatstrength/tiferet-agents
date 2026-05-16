@@ -167,6 +167,18 @@ class AgentConfiguration(DomainObject):
         description='Graph topology type (react, custom).',
     )
 
+    # * attribute: checkpointer
+    checkpointer: str = Field(
+        default='memory',
+        description='Checkpointer type for state persistence (memory, sqlite, postgres).',
+    )
+
+    # * attribute: checkpointer_config
+    checkpointer_config: Dict[str, str] = Field(
+        default_factory=dict,
+        description='Configuration parameters for the checkpointer (e.g., db_path for sqlite).',
+    )
+
     # * attribute: max_retries
     max_retries: int = Field(
         default=3,
