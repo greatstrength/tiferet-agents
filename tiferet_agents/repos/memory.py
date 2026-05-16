@@ -3,7 +3,7 @@
 # *** imports
 
 # ** core
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 # ** app
 from tiferet_kb.interfaces.document import DocumentService

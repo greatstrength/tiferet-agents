@@ -11,7 +11,6 @@ from tiferet.events import DomainEvent
 from ..assets import constants as const
 from ..interfaces.agent import AgentService
 from ..interfaces.llm import LLMProviderService
-from ..mappers.agent import AgentConfigurationAggregate
 from ..utils.graph import GraphBuilder
 
 # *** events

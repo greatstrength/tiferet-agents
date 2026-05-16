@@ -3,7 +3,6 @@
 # *** imports
 
 # ** infra
-import pytest
 
 # ** app
 from ..memory import MemoryFact, MemoryNamespace

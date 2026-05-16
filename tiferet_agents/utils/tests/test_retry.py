@@ -3,14 +3,15 @@
 # *** imports
 
 # ** infra
-import pytest
 from unittest import mock
+
+import pytest
 
 # ** app
 from tiferet.assets.exceptions import TiferetError
 
-from ..retry import RetryHandler
 from ...assets import constants as const
+from ..retry import RetryHandler
 
 # *** tests
 

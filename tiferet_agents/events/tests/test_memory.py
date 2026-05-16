@@ -3,16 +3,17 @@
 # *** imports
 
 # ** infra
-import pytest
 from unittest import mock
+
+import pytest
 
 # ** app
 from tiferet.events import DomainEvent
 
-from ..memory import ExtractFacts, RecallMemory, ForgetFact
 from ...domain.memory import MemoryFact
-from ...interfaces.memory import MemoryService
 from ...interfaces.embedding import EmbeddingService
+from ...interfaces.memory import MemoryService
+from ..memory import ExtractFacts, ForgetFact, RecallMemory
 
 # *** fixtures
 

@@ -8,7 +8,6 @@ from typing import List
 # ** app
 from tiferet.events import DomainEvent
 
-from ..assets import constants as const
 from ..domain.memory import MemoryFact
 from ..interfaces.embedding import EmbeddingService
 from ..interfaces.memory import MemoryService

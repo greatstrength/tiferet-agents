@@ -3,20 +3,19 @@
 # *** imports
 
 # ** infra
-import pytest
-from pathlib import Path
 from unittest import mock
+
+import pytest
+from tiferet.assets.exceptions import TiferetError
 
 # ** app
 from tiferet.events import DomainEvent
-from tiferet.assets.exceptions import TiferetError
 
 from ..events.conversation import SendMessage
 from ..interfaces.agent import AgentService
 from ..interfaces.conversation import ConversationService
 from ..interfaces.llm import LLMProviderService
 from ..mappers.agent import AgentConfigurationAggregate
-from ..mappers.conversation import ConversationAggregate, MessageAggregate
 from ..utils.graph import GraphBuilder
 
 # *** fixtures

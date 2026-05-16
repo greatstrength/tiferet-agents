@@ -3,7 +3,6 @@
 # *** imports
 
 # ** infra
-import pytest
 
 # ** app
 from ..agent import AgentConfiguration, AgentTool

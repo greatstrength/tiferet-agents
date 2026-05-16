@@ -7,7 +7,6 @@ import importlib
 from typing import Any, Generator, List, Optional, Sequence
 
 # ** infra
-from langchain_core.messages import SystemMessage
 from langgraph.prebuilt import create_react_agent
 
 # ** app

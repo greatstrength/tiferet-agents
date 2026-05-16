@@ -3,16 +3,17 @@
 # *** imports
 
 # ** infra
-import pytest
 from unittest import mock
+
+import pytest
+from tiferet.assets.exceptions import TiferetError
 
 # ** app
 from tiferet.events import DomainEvent
-from tiferet.assets.exceptions import TiferetError
 
-from ..agent import ConfigureAgent, GetAgent, ListAgents, RemoveAgent
 from ...interfaces.agent import AgentService
 from ...mappers.agent import AgentConfigurationAggregate
+from ..agent import ConfigureAgent, GetAgent, ListAgents, RemoveAgent
 
 # *** fixtures
 
