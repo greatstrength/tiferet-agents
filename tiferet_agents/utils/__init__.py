@@ -3,6 +3,7 @@
 # *** exports
 
 # ** app
+from .checkpointers import CheckpointerFactory
 from .embeddings import EmbeddingProviderFactory
 from .feature_tools import create_feature_tool
 from .graph import GraphBuilder

@@ -28,8 +28,8 @@ try:
         SendMessage, SendMessageStream,
     )
     from .utils import (
-        EmbeddingProviderFactory, GraphBuilder, LLMProviderFactory,
-        PromptRenderer, RetryHandler, create_feature_tool,
+        CheckpointerFactory, EmbeddingProviderFactory, GraphBuilder,
+        LLMProviderFactory, PromptRenderer, RetryHandler, create_feature_tool,
     )
 except Exception as e:
     import os, sys
@@ -38,4 +38,4 @@ except Exception as e:
 
 # *** version
 
-__version__ = '0.1.0a4'
+__version__ = '0.1.0b1'
