@@ -6,6 +6,9 @@
 import importlib
 from typing import Any, Generator, List, Optional, Sequence
 
+# NOTE: RetryHandler is imported at module level to avoid circular imports
+# and to enable _classify_error usage in invoke/stream/resume.
+
 # ** infra
 from langgraph.prebuilt import create_react_agent
 
@@ -14,6 +17,7 @@ from tiferet.events import RaiseError
 
 from ..assets import constants as const
 from ..mappers.agent import AgentConfigurationAggregate
+from .retry import RetryHandler
 
 # *** utils
 
@@ -149,7 +153,9 @@ class GraphBuilder:
         Load and instantiate tools from an agent configuration.
 
         Iterates over agent_config.tools, imports each module_path.class_name,
-        and instantiates with any static parameters.
+        and resolves to either a constructor (class/function) or a pre-built
+        tool object (e.g., @tool-decorated). Static parameters are applied
+        in both cases.
 
         :param agent_config: The agent configuration with tool definitions.
         :type agent_config: AgentConfigurationAggregate
@@ -168,17 +174,42 @@ class GraphBuilder:
 
                 # Import the module and resolve the class/function.
                 module = importlib.import_module(tool_def.module_path)
-                tool_cls = getattr(module, tool_def.class_name)
+                tool_obj = getattr(module, tool_def.class_name)
 
-                # Instantiate with static parameters if any.
-                if tool_def.parameters:
-                    tool_instance = tool_cls(**tool_def.parameters)
+                # Determine if the resolved object is a pre-built tool instance
+                # (e.g., @tool-decorated) or a constructor that needs instantiation.
+                if GraphBuilder._is_tool_instance(tool_obj):
+
+                    # Pre-built tool: bind static parameters if provided.
+                    tool_instance = GraphBuilder._bind_params_to_tool(
+                        tool_obj, tool_def.parameters or {},
+                    )
+
+                elif isinstance(tool_obj, type) or callable(tool_obj):
+
+                    # Constructor or factory: instantiate with static parameters.
+                    if tool_def.parameters:
+                        tool_instance = tool_obj(**tool_def.parameters)
+                    else:
+                        tool_instance = tool_obj()
+
                 else:
-                    tool_instance = tool_cls()
+
+                    # Unsupported tool shape.
+                    RaiseError.execute(
+                        error_code=const.TOOL_LOAD_ERROR_ID,
+                        tool_id=tool_def.id,
+                        error=f'Unsupported tool shape: {type(tool_obj).__name__}',
+                    )
 
                 loaded.append(tool_instance)
 
             except Exception as e:
+
+                # Re-raise TiferetError without wrapping.
+                from tiferet.assets.exceptions import TiferetError
+                if isinstance(e, TiferetError):
+                    raise
 
                 # Wrap tool loading errors.
                 RaiseError.execute(
@@ -189,6 +220,70 @@ class GraphBuilder:
 
         # Return the list of loaded tools.
         return loaded
+
+    # * method: _is_tool_instance (static)
+    @staticmethod
+    def _is_tool_instance(obj: Any) -> bool:
+        '''
+        Check whether an object is an already-instantiated tool.
+
+        Detects LangChain BaseTool instances and callable objects with
+        tool-like attributes (name, description) that are not classes.
+
+        :param obj: The resolved object from module import.
+        :type obj: Any
+        :return: True if the object is a pre-built tool instance.
+        :rtype: bool
+        '''
+
+        # Check for LangChain BaseTool instances.
+        try:
+            from langchain_core.tools import BaseTool
+            if isinstance(obj, BaseTool):
+                return True
+        except ImportError:
+            pass
+
+        # Check for callable objects with tool-like attributes that are not classes.
+        if not isinstance(obj, type) and callable(obj) and hasattr(obj, 'name') and hasattr(obj, 'description'):
+            return True
+
+        # Not a pre-built tool.
+        return False
+
+    # * method: _bind_params_to_tool (static)
+    @staticmethod
+    def _bind_params_to_tool(tool_obj: Any, params: dict) -> Any:
+        '''
+        Bind static configuration parameters to a pre-built tool object.
+
+        For pre-built tools, static parameters are stored as attributes
+        on the tool object without altering its name, description, or
+        invocation schema.
+
+        :param tool_obj: The pre-built tool instance.
+        :type tool_obj: Any
+        :param params: Static parameters to bind.
+        :type params: dict
+        :return: The tool with parameters bound.
+        :rtype: Any
+        '''
+
+        # If no parameters, return the tool as-is.
+        if not params:
+            return tool_obj
+
+        # Bind each parameter as an attribute on the tool.
+        # Use object.__setattr__ to bypass Pydantic validation on
+        # StructuredTool and other Pydantic-based tool objects.
+        for key, value in params.items():
+            try:
+                setattr(tool_obj, key, value)
+            except (ValueError, AttributeError):
+                object.__setattr__(tool_obj, key, value)
+
+        # Return the tool with bound parameters.
+        return tool_obj
 
     # * method: invoke (static)
     @staticmethod
@@ -225,9 +320,10 @@ class GraphBuilder:
 
         except Exception as e:
 
-            # Wrap invocation errors.
+            # Classify and raise the error with the appropriate code.
+            error_code = RetryHandler._classify_error(e)
             RaiseError.execute(
-                error_code=const.LLM_INVOCATION_ERROR_ID,
+                error_code=error_code,
                 error=str(e),
             )
 
@@ -273,9 +369,10 @@ class GraphBuilder:
 
         except Exception as e:
 
-            # Wrap streaming errors.
+            # Classify and raise the error with the appropriate code.
+            error_code = RetryHandler._classify_error(e)
             RaiseError.execute(
-                error_code=const.LLM_INVOCATION_ERROR_ID,
+                error_code=error_code,
                 error=str(e),
             )
 
@@ -319,8 +416,9 @@ class GraphBuilder:
 
         except Exception as e:
 
-            # Wrap resume errors.
+            # Classify and raise the error with the appropriate code.
+            error_code = RetryHandler._classify_error(e)
             RaiseError.execute(
-                error_code=const.LLM_INVOCATION_ERROR_ID,
+                error_code=error_code,
                 error=str(e),
             )

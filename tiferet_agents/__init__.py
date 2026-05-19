@@ -8,6 +8,7 @@ __all__ = [
     'AgentConfigurationAggregate', 'AgentConfigurationYamlObject',
     'AgentToolAggregate', 'AgentToolYamlObject',
     'ConversationAggregate', 'MessageAggregate',
+    'InMemoryConversationRepository',
     'ApproveToolCall', 'DenyToolCall', 'SendMessage', 'SendMessageStream',
     'CheckpointerFactory', 'EmbeddingProviderFactory', 'GraphBuilder',
     'LLMProviderFactory', 'PromptRenderer', 'RetryHandler', 'create_feature_tool',
@@ -50,6 +51,9 @@ try:
         ConversationAggregate,
         MessageAggregate,
     )
+    from .repos import (
+        InMemoryConversationRepository,
+    )
     from .utils import (
         CheckpointerFactory,
         EmbeddingProviderFactory,
@@ -67,4 +71,4 @@ except Exception as e:
 
 # *** version
 
-__version__ = '0.1.0b1'
+__version__ = '1.0.0b1'
