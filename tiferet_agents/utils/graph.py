@@ -6,9 +6,6 @@
 import importlib
 from typing import Any, Generator, List, Optional, Sequence
 
-# NOTE: RetryHandler is imported at module level to avoid circular imports
-# and to enable _classify_error usage in invoke/stream/resume.
-
 # ** infra
 from langgraph.prebuilt import create_react_agent
 

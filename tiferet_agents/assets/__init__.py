@@ -3,4 +3,4 @@
 # *** exports
 
 # ** app
-from .errors import DEFAULT_ERRORS
+from .errors import DEFAULT_ERRORS as DEFAULT_ERRORS

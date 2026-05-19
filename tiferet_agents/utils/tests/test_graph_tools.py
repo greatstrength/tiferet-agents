@@ -2,15 +2,13 @@
 
 # *** imports
 
-# ** core
 import sys
 import types
 from unittest import mock
 
 # ** infra
 import pytest
-
-from langchain_core.tools import tool, BaseTool
+from langchain_core.tools import tool
 
 # ** app
 from tiferet.assets.exceptions import TiferetError
