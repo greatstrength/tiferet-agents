@@ -85,11 +85,13 @@ class MemoryKBAdapter(MemoryService):
                 return ns
 
         # Create a new document for the namespace.
+        # Use only guaranteed fields (title); description may not be
+        # accepted by all backing document contracts.
         from tiferet_kb.mappers import DocumentAggregate
-        doc = DocumentAggregate(
-            title=doc_title,
-            description=f'Memory namespace for agent {agent_id}',
-        )
+        create_kwargs = dict(title=doc_title)
+        if 'description' in DocumentAggregate.model_fields:
+            create_kwargs['description'] = f'Memory namespace for agent {agent_id}'
+        doc = DocumentAggregate(**create_kwargs)
         self.document_service.save(doc)
 
         # Build and cache the namespace.

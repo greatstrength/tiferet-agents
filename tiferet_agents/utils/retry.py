@@ -59,7 +59,7 @@ class RetryHandler:
                 error_code = RetryHandler._classify_error(e)
 
                 # Non-retryable errors are raised immediately.
-                if error_code in (const.LLM_AUTH_ERROR_ID, const.LLM_CONTEXT_LENGTH_ERROR_ID):
+                if error_code in (const.LLM_AUTH_ERROR_ID, const.LLM_CONTEXT_LENGTH_ERROR_ID, const.LLM_QUOTA_EXCEEDED_ID):
                     RaiseError.execute(
                         error_code=error_code,
                         error=str(e),
@@ -91,6 +91,10 @@ class RetryHandler:
 
         error_str = str(type(error).__name__).lower()
         error_msg = str(error).lower()
+
+        # Quota exhaustion errors (non-retryable billing errors).
+        if 'insufficient_quota' in error_msg or 'exceeded your current quota' in error_msg:
+            return const.LLM_QUOTA_EXCEEDED_ID
 
         # Rate limit errors.
         if 'ratelimit' in error_str or 'rate_limit' in error_msg or '429' in error_msg:

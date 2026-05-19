@@ -68,5 +68,8 @@ TOOL_APPROVAL_REQUIRED_ID = 'TOOL_APPROVAL_REQUIRED'
 # ** constant: tool_call_not_found_id
 TOOL_CALL_NOT_FOUND_ID = 'TOOL_CALL_NOT_FOUND'
 
+# ** constant: llm_quota_exceeded_id
+LLM_QUOTA_EXCEEDED_ID = 'LLM_QUOTA_EXCEEDED'
+
 # ** constant: invalid_checkpointer_type_id
 INVALID_CHECKPOINTER_TYPE_ID = 'INVALID_CHECKPOINTER_TYPE'

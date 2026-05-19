@@ -127,6 +127,41 @@ def test_classify_timeout_error():
     assert result == const.LLM_TIMEOUT_ERROR_ID
 
 
+# ** test: classify_quota_exceeded_error
+def test_classify_quota_exceeded_error():
+    '''
+    Test classification of quota exhaustion errors.
+    '''
+
+    # Test insufficient_quota pattern.
+    error = Exception('Error code: 429 - insufficient_quota')
+    result = RetryHandler._classify_error(error)
+    assert result == const.LLM_QUOTA_EXCEEDED_ID
+
+    # Test exceeded your current quota pattern.
+    error = Exception('You exceeded your current quota, please check your plan.')
+    result = RetryHandler._classify_error(error)
+    assert result == const.LLM_QUOTA_EXCEEDED_ID
+
+
+# ** test: retry_handler_non_retryable_quota_error
+def test_retry_handler_non_retryable_quota_error():
+    '''
+    Test that quota exhaustion errors are raised immediately without retry.
+    '''
+
+    # Arrange: fail with quota error.
+    fn = mock.Mock(side_effect=Exception('insufficient_quota'))
+
+    # Execute and expect immediate error.
+    with pytest.raises(TiferetError) as exc_info:
+        RetryHandler.execute_with_retry(fn, max_retries=3, base_delay=0.01)
+
+    # Assert only one attempt was made.
+    assert fn.call_count == 1
+    assert exc_info.value.error_code == const.LLM_QUOTA_EXCEEDED_ID
+
+
 # ** test: classify_generic_error
 def test_classify_generic_error():
     '''
