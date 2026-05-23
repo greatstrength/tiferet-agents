@@ -16,7 +16,12 @@ from ..interfaces.agent import AgentService
 from ..interfaces.conversation import ConversationService
 from ..interfaces.llm import LLMProviderService
 from ..mappers.agent import AgentConfigurationAggregate
+from ..domain.agent import AgentMemoryConfig
+from ..domain.memory import MemoryNamespace
+from ..interfaces.embedding import EmbeddingService
+from ..interfaces.memory import MemoryService
 from ..utils.graph import GraphBuilder
+from ..utils.memory_tools import create_memory_tools
 
 # *** fixtures
 
@@ -191,3 +196,97 @@ def test_send_message_missing_required_params(mock_services):
             },
             # Missing both agent_id and message.
         )
+
+
+# ** test: send_message_memory_enabled_first_message
+def test_send_message_memory_enabled_first_message():
+    '''
+    Integration test: a memory-enabled agent can initialize, create its
+    namespace, load memory tools, and reach the LLM call boundary on
+    the first message without compatibility failures.
+    '''
+
+    # Build a memory-enabled agent configuration.
+    memory_agent = AgentConfigurationAggregate(
+        id='memory-test-agent',
+        name='Memory Test Agent',
+        provider='openai',
+        model='gpt-4o-mini',
+        system_prompt='You are a test assistant with memory.',
+        temperature=0.0,
+        memory=AgentMemoryConfig(
+            enabled=True,
+            namespace='default',
+            recall_limit=5,
+        ),
+    )
+
+    # Wire mock services.
+    agent_service = mock.Mock(spec=AgentService)
+    agent_service.get.return_value = memory_agent
+
+    conversation_service = mock.Mock(spec=ConversationService)
+    conversation_service.get.return_value = None
+
+    llm_service = mock.Mock(spec=LLMProviderService)
+    llm_service.create_model.return_value = mock.Mock()
+
+    # Mock memory service: get_or_create_namespace returns a namespace.
+    memory_service = mock.Mock(spec=MemoryService)
+    memory_service.get_or_create_namespace.return_value = MemoryNamespace(
+        id='ns-001',
+        agent_id='memory-test-agent',
+        name='default',
+    )
+
+    # Mock embedding service.
+    embedding_service = mock.Mock(spec=EmbeddingService)
+    embedding_service.embed_text.return_value = [0.1, 0.2, 0.3]
+    embedding_service.get_model_name.return_value = 'text-embedding-3-small'
+
+    # Patch GraphBuilder to avoid real LangGraph construction.
+    mock_graph = mock.Mock()
+    mock_graph.invoke.return_value = {
+        'messages': [mock.Mock(content='I remember you!')]
+    }
+
+    with mock.patch.object(GraphBuilder, 'build', return_value=mock_graph) as mock_build:
+        with mock.patch.object(GraphBuilder, 'load_tools', return_value=[]):
+
+            result = DomainEvent.handle(
+                SendMessage,
+                dependencies={
+                    'agent_service': agent_service,
+                    'conversation_service': conversation_service,
+                    'llm_provider_service': llm_service,
+                    'memory_service': memory_service,
+                    'embedding_service': embedding_service,
+                },
+                agent_id='memory-test-agent',
+                message='Hello, remember me?',
+            )
+
+    # Assert the response was produced.
+    assert result is not None
+    assert result.content == 'I remember you!'
+    assert result.role == 'ai'
+
+    # Assert the namespace was created on first message.
+    memory_service.get_or_create_namespace.assert_called_once_with(
+        agent_id='memory-test-agent',
+        name='default',
+    )
+
+    # Assert memory tools were added to the graph build.
+    build_call = mock_build.call_args
+    tools_passed = build_call.kwargs.get('tools') or build_call[1].get('tools', [])
+    # Memory tools (recall_memory, store_memory) should be in the list.
+    assert len(tools_passed) == 2
+    tool_names = [getattr(t, 'name', '') for t in tools_passed]
+    assert 'recall_memory' in tool_names
+    assert 'store_memory' in tool_names
+
+    # Assert conversation was persisted with both messages.
+    conversation_service.save.assert_called_once()
+    saved_conversation = conversation_service.save.call_args[0][0]
+    assert len(saved_conversation.messages) == 2
